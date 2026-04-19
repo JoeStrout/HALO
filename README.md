@@ -24,3 +24,11 @@ This repo has demonstration code to apply the HALO effect, either to live (TTS) 
 | [python_preset](python_preset/) | Python demo using pre-rendered WAV files. No TTS library required — pick a voice, pick a preset, toggle HALO. |
 | [js_preset](js_preset/) | Browser-based demo. Same voice/preset/HALO controls, implemented with the Web Audio API. **[Try it live](https://JoeStrout.github.io/HALO/js_preset/)** |
 | [unity_preset](unity_preset/) | Unity demo. Same controls in a self-contained C# script; HALO applied via Unity's built-in `AudioEchoFilter`. |
+
+All demo code is available [on GitHub](https://github.com/JoeStrout/HALO) with a public domain [license](LICENSE).
+
+## Please use this!
+
+HALO is only useful if it catches on, so if you are a developer, podcaster, or otherwise involved in producing audio of AI speech, **please use this** to give your AI speakers that subtle but distinctive "I'm an AI" quality.
+
+Questions?  Comments?  Join us in the [HALO Discussions](https://github.com/JoeStrout/HALO/discussions)!
