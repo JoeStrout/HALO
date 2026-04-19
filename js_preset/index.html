@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>HALO Effect Demo</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: #16213e;
+      border: 1px solid #0f3460;
+      border-radius: 12px;
+      padding: 2rem;
+      width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      letter-spacing: 0.1em;
+      color: #e94560;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: #888;
+      margin-top: -0.75rem;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 0.4rem; }
+
+    label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #aaa;
+    }
+
+    select {
+      background: #0f3460;
+      color: #e0e0e0;
+      border: 1px solid #1a5276;
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+      appearance: none;
+    }
+
+    .preset-text {
+      font-size: 0.9rem;
+      color: #bbb;
+      font-style: italic;
+      min-height: 2.5em;
+      line-height: 1.4;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    /* Toggle switch */
+    .switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider-track {
+      position: absolute; inset: 0;
+      background: #333;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .slider-track::before {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      left: 3px; top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    input:checked + .slider-track { background: #e94560; }
+    input:checked + .slider-track::before { transform: translateX(20px); }
+
+    #play-btn {
+      margin-top: 0.25rem;
+      padding: 0.75rem;
+      background: #e94560;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    #play-btn:hover { background: #c73652; }
+    #play-btn:active { transform: scale(0.97); }
+    #play-btn:disabled { background: #555; cursor: default; transform: none; }
+
+    .status {
+      font-size: 0.8rem;
+      color: #888;
+      min-height: 1.2em;
+      text-align: center;
+    }
+    .status.error { color: #e94560; }
+
+    .server-note {
+      font-size: 0.75rem;
+      color: #666;
+      text-align: center;
+      line-height: 1.5;
+    }
+    code {
+      background: #0d1b2a;
+      padding: 0.1em 0.35em;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>HALO</h1>
+  <p class="subtitle">An audible watermark for synthetic speech</p>
+
+  <div class="field">
+    <label>Voice</label>
+    <select id="voice">
+      <option value="af_heart">American female (af_heart)</option>
+      <option value="am_adam">American male (am_adam)</option>
+      <option value="bf_emma" selected>British female (bf_emma)</option>
+      <option value="bm_george">British male (bm_george)</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Preset</label>
+    <select id="preset"></select>
+    <p class="preset-text" id="preset-text"></p>
+  </div>
+
+  <div class="field">
+    <div class="toggle-row">
+      <label class="switch">
+        <input type="checkbox" id="halo-toggle" checked>
+        <span class="slider-track"></span>
+      </label>
+      <label for="halo-toggle" style="text-transform:none;font-size:0.9rem;color:#ccc;cursor:pointer;">
+        Apply HALO effect
+      </label>
+    </div>
+  </div>
+
+  <button id="play-btn">&#9654;&#xFE0E; Play</button>
+  <p class="status" id="status"></p>
+  <p class="server-note">
+    Serve from the HALO root: <code>python3 -m http.server 8000</code><br>
+    then open <code>http://localhost:8000/js_preset/</code>
+  </p>
+
+</div>
+
+<script>
+  const PRESETS = [
+    "HALO is an audible effect that makes synthetic speech easily identifiable, yet still clear.",
+    "You can apply HALO to real-time synthetic speech, or prerendered audio clips.",
+    "Consider using HALO whenever you are rendering AI-generated speech.",
+  ];
+
+  // Populate preset select
+  const presetSel = document.getElementById('preset');
+  PRESETS.forEach((text, i) => {
+    const opt = document.createElement('option');
+    opt.value = i + 1;
+    opt.textContent = `${i + 1}. ${text.slice(0, 55)}…`;
+    presetSel.appendChild(opt);
+  });
+  const presetText = document.getElementById('preset-text');
+  const updatePresetText = () => {
+    presetText.textContent = PRESETS[presetSel.value - 1];
+  };
+  presetSel.addEventListener('change', updatePresetText);
+  updatePresetText();
+
+  const haloToggle = document.getElementById('halo-toggle');
+
+  // AudioContext + limiter, created on first play to satisfy browser autoplay policy
+  let actx = null;
+  let limiter = null;
+  async function getAudioContext() {
+    if (!actx) {
+      actx = new AudioContext();
+      limiter = actx.createDynamicsCompressor();
+      limiter.threshold.value = -1;
+      limiter.knee.value      = 0;
+      limiter.ratio.value     = 20;
+      limiter.attack.value    = 0.001;
+      limiter.release.value   = 0.1;
+      limiter.connect(actx.destination);
+    }
+    if (actx.state === 'suspended') await actx.resume();
+    return actx;
+  }
+
+  // Decoded AudioBuffer cache (fetch + decodeAudioData; works when served over HTTP)
+  const bufferCache = new Map();
+  async function loadBuffer(url) {
+    if (bufferCache.has(url)) return bufferCache.get(url);
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error('not found');
+    const arrayBuf = await resp.arrayBuffer();
+    const audioBuf = await actx.decodeAudioData(arrayBuf);
+    bufferCache.set(url, audioBuf);
+    return audioBuf;
+  }
+
+  // Play
+  const playBtn = document.getElementById('play-btn');
+  const status  = document.getElementById('status');
+  let currentSrc = null;
+
+  function stopCurrent() {
+    if (currentSrc) { try { currentSrc.stop(); } catch (e) {} currentSrc = null; }
+  }
+
+  playBtn.addEventListener('click', async () => {
+    const voice   = document.getElementById('voice').value;
+    const n       = String(presetSel.value).padStart(2, '0');
+    const useHalo = haloToggle.checked;
+    const delayS  = 0.025;
+    const amp     = 1.0;
+    const url     = `../preset_speech/${voice}_${n}.wav`;
+
+    stopCurrent();
+
+    playBtn.disabled = true;
+    status.className = 'status';
+    status.textContent = 'Loading…';
+
+    try {
+      await getAudioContext();
+      const buffer = await loadBuffer(url);
+
+      const src     = actx.createBufferSource();
+      src.buffer    = buffer;
+      const dryGain = actx.createGain();
+      const delay   = actx.createDelay(1.0);
+      const wetGain = actx.createGain();
+
+      dryGain.gain.value    = 1.0;
+      delay.delayTime.value = delayS;
+      wetGain.gain.value    = useHalo ? amp : 0;
+
+      src.connect(dryGain);  dryGain.connect(limiter);
+      src.connect(delay);    delay.connect(wetGain);  wetGain.connect(limiter);
+
+      src.start();
+      currentSrc = src;
+      status.textContent = `Playing ${voice}, preset ${presetSel.value}${useHalo ? ' + HALO' : ''}`;
+
+      src.onended = () => {
+        if (currentSrc === src) currentSrc = null;
+        playBtn.disabled = false;
+        status.textContent = '';
+      };
+    } catch (err) {
+      status.className   = 'status error';
+      status.textContent = err.message.includes('not found')
+        ? 'File not found — run render_presets.py first.'
+        : `Error: ${err.message}`;
+      playBtn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>

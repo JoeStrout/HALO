@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+
+# Unity generated folders (do not commit)
+unity_preset/Library/
+unity_preset/Temp/
+unity_preset/Logs/
+unity_preset/obj/
+unity_preset/Builds/
+unity_preset/UserSettings/
+
+# Unity IDE files
+*.csproj
+*.sln
+.vs/
+
+# Logs
+*.log
