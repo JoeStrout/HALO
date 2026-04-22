@@ -1,7 +1,7 @@
 // Demo of HALO effect in Mini Micro (https://miniscript.org/MiniMicro).
 // Because the Mini Micro API does not provide easy access to the raw
 // waveform of sounds loaded from files, we opt for a simpler approach:
-// load the sound twice, and play the second copy after a 20-ms delay.
+// load the sound twice, and play the second copy after a 25-ms delay.
 
 import "stringUtil"
 
@@ -18,7 +18,7 @@ playClip = function(path, withHalo=true)
 		snd.play
 	else
 		snd2 = file.loadSound(path)		
-		snd.play; wait 0.02; snd2.play
+		snd.play; wait 0.025; snd2.play
 	end if
 end function
 
